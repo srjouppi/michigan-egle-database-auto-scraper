@@ -14,7 +14,7 @@ jobs:
         with:
           python-version: '3.9'
       - name: Install all necessary packages
-        run: pip install requests beautifulsoup4 pandas
+        run: pip install requests beautifulsoup4 pandas tqdm regex
       - name: Run the scraping script
         run: python MDEQ-SRN-database-auto-scraper.py
       - name: Commit and push if content changed
