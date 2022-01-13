@@ -1,2 +1,2 @@
-date,updates_found,source_data,source_extras,mistakes,source_data_urls,source_extras_urls,mistakes_urls
-1/11/2022,16,0,0,0,,,
+date,updates_found,source_data,source_extras,mistakes,sources_updated,source_data_urls,source_extras_urls,mistakes_urls
+1/11/2022,12,0,2,0,"['B1477', 'B1991', 'B2178', 'B4197', 'B7220', 'K2131', 'N1192', 'N1685', 'N2155', 'N5910', 'N5991', 'N7688']",,"['https://www.deq.state.mi.us/aps/downloads/SRN/N2155/Active%20PTIs%20for%20FCA%20US%20DAC.pdf', 'https://www.deq.state.mi.us/aps/downloads/SRN/N2155/FCA%20US%20DAC%20Source%20Info%20Documents.pdf']",
