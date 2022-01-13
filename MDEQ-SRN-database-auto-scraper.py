@@ -9,14 +9,16 @@ import pandas as pd
 from bs4 import BeautifulSoup
 import re
 from tqdm import tqdm
-from datetime import date
+from datetime import datetime
+from pytz import timezone
 
 
 # In[2]:
 
 
 # What day is it?
-today = date.today()
+tz = timezone('EST')
+today = datetime.now(tz) 
 
 # Making datetime the same format as the MDEQ website
 today = today.strftime("%-m/%-d/%Y")
@@ -179,9 +181,8 @@ if len(all_sources_data) != 0:
     df = df.drop(['id'], axis=1)
     df['date'] = pd.to_datetime(df['date'], format="%Y%m%d", errors='coerce')
     df['zip_code'] = df['zip_code'].astype(str).str[:5]
-
-# Saving it to a separate csv
-df.to_csv("output/MDEQ-SRN-documents-source-info.csv", index=False)
+    df = df[['name', 'doc_type','date', 'zip_code','county', 'full_address', 'geometry', 'doc_url']]
+    df.to_csv("output/MDEQ-SRN-documents-source-info.csv", index=False)
 
 
 # In[12]:
@@ -210,7 +211,7 @@ else:
     new_extras_urls = []
 
 
-# In[14]:
+# In[15]:
 
 
 # Reading in my most recent scrape report
@@ -221,7 +222,7 @@ df = pd.read_csv("output/MDEQ-SRN-scraper-report.csv")
 scrape_report = []
 data = {}
 
-data['date'] = '1/11/2022'
+data['date'] = '1/12/2022'
 
 data['updates_found'] = len(sources_updated)
 
@@ -254,7 +255,7 @@ else:
 scrape_report.append(data)
 
 
-# In[15]:
+# In[16]:
 
 
 report_df = pd.DataFrame(scrape_report)
@@ -264,10 +265,4 @@ report_df = pd.concat([df,report_df], axis=0, ignore_index=True)
 
 # Overwriting the report csv with update
 report_df.to_csv("output/MDEQ-SRN-scraper-report.csv", index=False)
-
-
-# In[ ]:
-
-
-
 
