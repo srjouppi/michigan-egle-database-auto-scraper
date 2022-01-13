@@ -118,7 +118,7 @@ for directory in tqdm(updates):
                 # Source_ID
                 data['source_id'] = re.findall(r"^\w\w?\d+",link.text)[0]
                 # Document code
-                data['doc_type'] = re.findall(r"_([A-Z]+\d?\d?)_",link.text, re.IGNORECASE)[0]
+                data['doc_type'] = re.findall(r"_?([A-Z]+\d?\d?)_",link.text, re.IGNORECASE)[0]
                 # Date
                 data['date'] = re.findall(r"_(\d{8})", link.text)[0]
                 # URL
