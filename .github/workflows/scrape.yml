@@ -2,11 +2,17 @@ name: scrape
 on:
   workflow_dispatch:
   schedule:
-    - cron: '55 23 * * *'
+    - cron: '55 4 * * *'
 jobs:
   scrape:
     runs-on: ubuntu-latest
     steps:
+      - name: Set Timezone
+        uses: szenius/set-timezone@v1.0
+        with:
+          timezoneLinux: "America/New_York"
+          timezoneMacos: "America/New_York"
+          timezoneWindows: "Eastern Standard Time"
       - name: Check out this repo
         uses: actions/checkout@v2
       - name: Set up Python
