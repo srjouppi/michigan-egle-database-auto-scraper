@@ -26,14 +26,14 @@ today = today.strftime("%-m/%-d/%Y")
 
 
 # Reading in the MDEQ master list of sources to search database for known sources
-df = pd.read_csv("MDEQ-SRN-directory.csv")
+directory_df = pd.read_csv("MDEQ-SRN-directory.csv")
 
 
 # In[4]:
 
 
 # Getting a list of known sources
-source_id_list = df.id.to_list()
+source_id_list = directory_df.id.to_list()
 
 
 # In[5]:
@@ -49,8 +49,11 @@ text = doc.get_text()
 
 
 # Getting the source name and date the directory was updated
-source_dates = re.findall(r">\W([A-Z]\d{4})\W?(\d\d?/\d\d?/\d{4})",text)
-unknown_source_dates = re.findall(r"\W([U]\d{9})\W?(\d\d?/\d\d?/\d{4})",text)
+# Although the text shows the source ID next to the date, 
+# the date actually appears before the source ID on the website
+# So my regex is looking for the source ID ~after~ the date.
+source_dates = re.findall(r"(\d\d?/\d\d?/\d{4})\s+\d+:\d{2}\s[A-Z]{2}\s*<dir>\s([A-Z]\d{4})",text)
+unknown_source_dates = re.findall(r"(\d\d?/\d\d?/\d{4})\s+\d+:\d{2}\s[A-Z]{2}\s*<dir>\s([U]\d{9})",text)
 
 
 # In[7]:
@@ -58,23 +61,26 @@ unknown_source_dates = re.findall(r"\W([U]\d{9})\W?(\d\d?/\d\d?/\d{4})",text)
 
 # Making a list of directory URLs that have had updates today
 updates = []
+sources_updated = []
 for source in source_dates:
-    source_id = source[0]
-    date = source[1]
+    source_id = source[1]
+    date = source[0]
     if (date == today) & (source_id in source_id_list):
-        link = "https://www.deq.state.mi.us/aps/downloads/SRN/"+source[0]
+        link = "https://www.deq.state.mi.us/aps/downloads/SRN/"+source_id
         updates.append(link)
+        sources_updated.append(source_id)
 for source in unknown_source_dates:
     if (date == today) & (source_id in source_id_list):
-        link = "https://www.deq.state.mi.us/aps/downloads/SRN/"+source[0]
+        link = "https://www.deq.state.mi.us/aps/downloads/SRN/"+source_id
         updates.append(link)
+        sources_updated.append(source_id)
 
 
 # In[8]:
 
 
 # Reading in the most recent csv of documents
-df = pd.read_csv("output/MDEQ-SRN-all-documents.csv")
+df = pd.read_csv("output/MDEQ-SRN-documents.csv")
 
 # Getting a list of document urls I already have
 doc_url_list = df.doc_url.to_list()
@@ -146,7 +152,7 @@ for directory in tqdm(updates):
 # In[10]:
 
 
-# Turning my list of lists of dicts of source data into a dataframe
+# Turning my list of lists of dicts of Source Data into a dataframe
 if len(all_sources_data) != 0:
     list_of_dfs = [pd.DataFrame(one_list) for one_list in all_sources_data]
     new_data_df = pd.concat(list_of_dfs, ignore_index=True)
@@ -156,20 +162,38 @@ if len(all_sources_data) != 0:
     updated_df = pd.concat([df,new_data_df], axis=0,ignore_index=True)
     
     # Overwriting the old csv with updates
-    updated_df.to_csv("output/MDEQ-SRN-all-documents.csv", index=False)
+    updated_df.to_csv("output/MDEQ-SRN-documents.csv", index=False)
+    
+else:
+    new_data_urls = []
 
 
 # In[11]:
+
+
+# Merging documents with MDEQ Source Directory
+# To get identifying information
+
+if len(all_sources_data) != 0:
+    df = updated_df.merge(directory_df, left_on="source_id", right_on="id", how="left")
+    df = df.drop(['id'], axis=1)
+    df['date'] = pd.to_datetime(df['date'], format="%Y%m%d", errors='coerce')
+    df['zip_code'] = df['zip_code'].astype(str).str[:5]
+
+df.to_csv("output/MDEQ-SRN-documents-source-info.csv", index=False)
+
+
+# In[12]:
 
 
 # Reading in my csv of extra documents
 df = pd.read_csv("output/MDEQ-SRN-extra-documents.csv")
 
 
-# In[12]:
+# In[13]:
 
 
-# Turning my list of lists of dicts of extra documents into a dataframe
+# Turning my list of lists of dicts of Extra Documents into a dataframe
 if len(all_sources_extras) != 0:
     list_of_dfs = [pd.DataFrame(one_list) for one_list in all_sources_extras]
     new_extras_df = pd.concat(list_of_dfs, ignore_index=True)
@@ -179,28 +203,37 @@ if len(all_sources_extras) != 0:
     updated_df = pd.concat([df,new_extras_df], axis=0, ignore_index=True)
     
     # Overwriting the old csv with updates
-    update_df.to_csv("output/MDEQ-SRN-extra-documents.csv", index=False)
+#     updated_df.to_csv("output/MDEQ-SRN-extra-documents.csv", index=False)
+    
+else:
+    new_extras_urls = []
 
 
-# In[13]:
+# In[14]:
 
 
 # Reading in my most recent scrape report
 df = pd.read_csv("output/MDEQ-SRN-scraper-report.csv")
 
 # Creating today's scrape report
+
 scrape_report = []
 data = {}
 
-data['date'] = today
+data['date'] = '1/11/2022'
 
-data['updates_found'] = len(updates)
+data['updates_found'] = len(sources_updated)
 
-data['source_data'] = len(all_sources_data)
+data['source_data'] = len(new_data_urls)
     
-data['source_extras'] = len(all_sources_extras)
+data['source_extras'] = len(new_extras_urls)
 
 data['mistakes'] = len(mistakes)
+
+if data['updates_found'] != 0:
+    data['sources_updated'] = sources_updated
+else:
+    data['sources_updated'] = None
 
 if data['source_data'] != 0:
     data['source_data_urls'] = new_data_urls
@@ -220,7 +253,7 @@ else:
 scrape_report.append(data)
 
 
-# In[14]:
+# In[15]:
 
 
 report_df = pd.DataFrame(scrape_report)
@@ -229,5 +262,11 @@ report_df = pd.DataFrame(scrape_report)
 report_df = pd.concat([df,report_df], axis=0, ignore_index=True)
 
 # Overwriting the report csv with update
-report_df.to_csv("output/MDEQ-SRN-scraper-report.csv")
+report_df.to_csv("output/MDEQ-SRN-scraper-report.csv", index=False)
+
+
+# In[ ]:
+
+
+
 
