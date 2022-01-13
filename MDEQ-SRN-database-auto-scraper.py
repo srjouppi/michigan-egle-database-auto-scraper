@@ -180,6 +180,7 @@ if len(all_sources_data) != 0:
     df['date'] = pd.to_datetime(df['date'], format="%Y%m%d", errors='coerce')
     df['zip_code'] = df['zip_code'].astype(str).str[:5]
 
+# Saving it to a separate csv
 df.to_csv("output/MDEQ-SRN-documents-source-info.csv", index=False)
 
 
@@ -203,7 +204,7 @@ if len(all_sources_extras) != 0:
     updated_df = pd.concat([df,new_extras_df], axis=0, ignore_index=True)
     
     # Overwriting the old csv with updates
-#     updated_df.to_csv("output/MDEQ-SRN-extra-documents.csv", index=False)
+    updated_df.to_csv("output/MDEQ-SRN-extra-documents.csv", index=False)
     
 else:
     new_extras_urls = []
