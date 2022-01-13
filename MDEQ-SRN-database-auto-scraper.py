@@ -181,7 +181,7 @@ if len(all_sources_data) != 0:
     df = df.drop(['id'], axis=1)
     df['date'] = pd.to_datetime(df['date'], format="%Y%m%d", errors='coerce')
     df['zip_code'] = df['zip_code'].astype(str).str[:5]
-    df = df[['name', 'doc_type','date', 'zip_code','county', 'full_address', 'geometry', 'doc_url']]
+    df = df[['name', 'doc_type','date', 'zip_code','county', 'full_address', 'source_id', 'geometry', 'doc_url']]
     df.to_csv("output/MDEQ-SRN-documents-source-info.csv", index=False)
 
 
@@ -211,7 +211,7 @@ else:
     new_extras_urls = []
 
 
-# In[15]:
+# In[14]:
 
 
 # Reading in my most recent scrape report
@@ -255,7 +255,7 @@ else:
 scrape_report.append(data)
 
 
-# In[16]:
+# In[15]:
 
 
 report_df = pd.DataFrame(scrape_report)
