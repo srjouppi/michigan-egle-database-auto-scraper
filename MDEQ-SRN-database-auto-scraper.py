@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[1]:
+# In[ ]:
 
 
 import requests
@@ -13,7 +13,7 @@ from datetime import datetime
 from pytz import timezone
 
 
-# In[2]:
+# In[ ]:
 
 
 # What day is it?
@@ -24,21 +24,17 @@ today = datetime.now(tz)
 today = today.strftime("%-m/%-d/%Y")
 
 
-# In[3]:
+# In[ ]:
 
 
 # Reading in the MDEQ master list of sources to search database for known sources
 directory_df = pd.read_csv("MDEQ-SRN-directory.csv")
 
-
-# In[4]:
-
-
 # Getting a list of known sources
 source_id_list = directory_df.id.to_list()
 
 
-# In[5]:
+# In[ ]:
 
 
 # Reading the MDEQ SRN database home page and getting the text
@@ -47,7 +43,7 @@ doc = BeautifulSoup(raw_html, "html.parser")
 text = doc.get_text()
 
 
-# In[6]:
+# In[ ]:
 
 
 # Getting the source name and date the directory was updated
@@ -58,7 +54,7 @@ source_dates = re.findall(r"(\d\d?/\d\d?/\d{4})\s+\d+:\d{2}\s[A-Z]{2}\s*<dir>\s(
 unknown_source_dates = re.findall(r"(\d\d?/\d\d?/\d{4})\s+\d+:\d{2}\s[A-Z]{2}\s*<dir>\s([U]\d{9})",text)
 
 
-# In[7]:
+# In[ ]:
 
 
 # Making a list of directory URLs that have had updates today
@@ -78,7 +74,17 @@ for source in unknown_source_dates:
         sources_updated.append(source_id)
 
 
-# In[8]:
+# In[ ]:
+
+
+# Reading in the most recent csv of extra documents
+df = pd.read_csv("output/MDEQ-SRN-extra-documents.csv")
+
+# Getting a list of extra document urls I already have
+extra_doc_url_list = df.doc_url.to_list()
+
+
+# In[ ]:
 
 
 # Reading in the most recent csv of documents
@@ -88,7 +94,7 @@ df = pd.read_csv("output/MDEQ-SRN-documents.csv")
 doc_url_list = df.doc_url.to_list()
 
 
-# In[9]:
+# In[ ]:
 
 
 # Scrape the directories that have had updates looking for urls that are not already in my csv
@@ -122,7 +128,7 @@ for directory in tqdm(updates):
                 # Date
                 data['date'] = re.findall(r"_(\d{8})", link.text)[0]
                 # URL
-                data['doc_url'] = "https://www.deq.state.mi.us"+link['href']
+                data['doc_url'] = doc_url
                 source_data.append(data)
             
             # Save links that don't fit the regex or just don't work for some reason (misakes)
@@ -135,8 +141,8 @@ for directory in tqdm(updates):
                     other['doc_name'] = link.text
                     
                     # extra doc URLs
-                    other['doc_url'] = "https://www.deq.state.mi.us"+link['href']
-                    if other['doc_name'] != '[To Parent Directory]':
+                    other['doc_url'] = doc_url
+                    if (other['doc_name'] != '[To Parent Directory]') & (doc_url not in extra_doc_url_list):
                         source_extras.append(other)
                         
                     
@@ -151,7 +157,7 @@ for directory in tqdm(updates):
         all_sources_extras.append(source_extras)
 
 
-# In[10]:
+# In[ ]:
 
 
 # Turning my list of lists of dicts of Source Data into a dataframe
@@ -170,7 +176,7 @@ else:
     new_data_urls = []
 
 
-# In[11]:
+# In[ ]:
 
 
 # Merging documents with MDEQ Source Directory
@@ -181,19 +187,15 @@ if len(all_sources_data) != 0:
     df = df.drop(['id'], axis=1)
     df['date'] = pd.to_datetime(df['date'], format="%Y%m%d", errors='coerce')
     df['zip_code'] = df['zip_code'].astype(str).str[:5]
-    df = df[['name', 'doc_type','date', 'zip_code','county', 'full_address', 'source_id', 'geometry', 'doc_url']]
+    df = df[['name', 'doc_type','date','zip_code','county','full_address','source_id','geometry', 'doc_url']]
     df.to_csv("output/MDEQ-SRN-documents-source-info.csv", index=False)
 
 
-# In[12]:
+# In[ ]:
 
 
 # Reading in my csv of extra documents
 df = pd.read_csv("output/MDEQ-SRN-extra-documents.csv")
-
-
-# In[13]:
-
 
 # Turning my list of lists of dicts of Extra Documents into a dataframe
 if len(all_sources_extras) != 0:
@@ -211,7 +213,7 @@ else:
     new_extras_urls = []
 
 
-# In[14]:
+# In[ ]:
 
 
 # Reading in my most recent scrape report
@@ -222,7 +224,7 @@ df = pd.read_csv("output/MDEQ-SRN-scraper-report.csv")
 scrape_report = []
 data = {}
 
-data['date'] = '1/12/2022'
+data['date'] = today
 
 data['updates_found'] = len(sources_updated)
 
@@ -255,7 +257,7 @@ else:
 scrape_report.append(data)
 
 
-# In[15]:
+# In[ ]:
 
 
 report_df = pd.DataFrame(scrape_report)

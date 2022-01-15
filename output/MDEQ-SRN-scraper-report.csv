@@ -1,4 +1,4 @@
 date,updates_found,source_data,source_extras,mistakes,sources_updated,source_data_urls,source_extras_urls,mistakes_urls
 1/12/2022,4,1,3,0,"['A2931', 'B7221', 'N6226', 'P0580']",['https://www.deq.state.mi.us/aps/downloads/SRN/P0580/P0580%20SAR_20210714.pdf'],"['https://www.deq.state.mi.us/aps/downloads/SRN/A2931/Active%20PTIs%20for%20Diamond%20Chrome%20Plating.pdf', 'https://www.deq.state.mi.us/aps/downloads/SRN/A2931/Diamond%20Chrome%20Plating%20Source%20Info%20Documents.pdf', 'https://www.deq.state.mi.us/aps/downloads/SRN/P0580/P0580%20SAR_20210714.pdf']",
-1/12/2022,0,0,0,0,,,,
-1/12/2022,0,0,0,0,,,,
+1/13/2022,1,2,0,0,['B1824'],"['https://www.deq.state.mi.us/aps/downloads/SRN/B1824/B1824_FCE_20210622.pdf', 'https://www.deq.state.mi.us/aps/downloads/SRN/B1824/B1824_SAR_20210622.pdf']",,
+1/14/2022,3,3,0,0,"['A3900', 'A9831', 'N8044']","['https://www.deq.state.mi.us/aps/downloads/SRN/A3900/A3900_TEST_20211109.pdf', 'https://www.deq.state.mi.us/aps/downloads/SRN/A9831/A9831_TEST_20211130.pdf', 'https://www.deq.state.mi.us/aps/downloads/SRN/N8044/N8044_TEST_20210930.pdf']",,
