@@ -3,3 +3,4 @@ date,updates_found,source_data,source_extras,mistakes,sources_updated,source_dat
 1/13/2022,1,2,0,0,['B1824'],"['https://www.deq.state.mi.us/aps/downloads/SRN/B1824/B1824_FCE_20210622.pdf', 'https://www.deq.state.mi.us/aps/downloads/SRN/B1824/B1824_SAR_20210622.pdf']",,
 1/14/2022,3,3,0,0,"['A3900', 'A9831', 'N8044']","['https://www.deq.state.mi.us/aps/downloads/SRN/A3900/A3900_TEST_20211109.pdf', 'https://www.deq.state.mi.us/aps/downloads/SRN/A9831/A9831_TEST_20211130.pdf', 'https://www.deq.state.mi.us/aps/downloads/SRN/N8044/N8044_TEST_20210930.pdf']",,
 1/15/2022,0,0,0,0,,,,
+1/16/2022,17,1,0,0,"['A2931', 'A9831', 'B1678', 'B1801', 'B2757', 'B2767', 'B3350', 'B7248', 'M4085', 'N0795', 'N1436', 'N2155', 'N2688', 'N5109', 'N5505', 'N7228', 'P0580']",['https://www.deq.state.mi.us/aps/downloads/SRN/P0580/P0580_SAR_20210714.pdf'],,
