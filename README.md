@@ -44,6 +44,8 @@ Using Beautiful Soup, I scraped over 18,000 documents for these sources of air p
 
 I joined the scraped data with identifing information (name, location) from the master list.
 
+This scraper uses Beautiful Soup and Regex to search the database for directories that have new updates, go into those folders and search for URLs that are not already in the dataset \(`MDEQ-SRN-documents.csv`\).
+
 ### Note
 ---
 To better understand what exactly is on their database: you should call the MDEQ. It's on my list of things to do, but alas, I'm in the throes of grad school and motherhood.
