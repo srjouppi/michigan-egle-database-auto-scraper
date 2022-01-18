@@ -1,6 +1,6 @@
 # michigan-deq-auto-scraper
- :mag: Scrapes the Michigan Department of Environmental Quality's [database of communication](https://www.deq.state.mi.us/aps/downloads/SRN/) with sources of air pollution daily at ~11:45pm.
- It looks for new documents from that day and adds them to existing databases.
+ ### :mag: Scrapes the Michigan Department of Environmental Quality's [database of communication](https://www.deq.state.mi.us/aps/downloads/SRN/) with sources of air pollution daily at ~11:45pm.
+ It looks for new documents from that day and adds them to existing datasets.
 
  
  ### :open_file_folder: /output/
