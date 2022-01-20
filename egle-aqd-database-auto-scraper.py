@@ -20,24 +20,24 @@ from pytz import timezone
 tz = timezone('EST')
 today = datetime.now(tz) 
 
-# Making datetime the same format as the MDEQ website
+# Making datetime the same format as the EGLE database
 today = today.strftime("%-m/%-d/%Y")
 
 
 # In[ ]:
 
 
-# Reading in the MDEQ master list of sources to search database for known sources
-directory_df = pd.read_csv("MDEQ-SRN-directory.csv")
+# Reading in the EGLE master list of sources to search database for known sources
+source_list_df = pd.read_csv("EGLE-AQD-source-list.csv")
 
 # Getting a list of known sources
-source_id_list = directory_df.id.to_list()
+source_id_list = source_list_df.id.to_list()
 
 
 # In[ ]:
 
 
-# Reading the MDEQ SRN database home page and getting the text
+# Reading the EGLE database home page and getting the text
 raw_html = requests.get("https://www.deq.state.mi.us/aps/downloads/SRN/").content
 doc = BeautifulSoup(raw_html, "html.parser")
 text = doc.get_text()
@@ -78,7 +78,7 @@ for source in unknown_source_dates:
 
 
 # Reading in the most recent csv of extra documents
-df = pd.read_csv("output/MDEQ-SRN-extra-documents.csv")
+df = pd.read_csv("output/EGLE-AQD-extra-documents.csv")
 
 # Getting a list of extra document urls I already have
 extra_doc_url_list = df.doc_url.to_list()
@@ -88,7 +88,7 @@ extra_doc_url_list = df.doc_url.to_list()
 
 
 # Reading in the most recent csv of documents
-df = pd.read_csv("output/MDEQ-SRN-documents.csv")
+df = pd.read_csv("output/EGLE-AQD-documents.csv")
 
 # Getting a list of document urls I already have
 doc_url_list = df.doc_url.to_list()
@@ -170,7 +170,7 @@ if len(all_sources_data) != 0:
     updated_df = pd.concat([df,new_data_df], axis=0,ignore_index=True)
     
     # Overwriting the old csv with updates
-    updated_df.to_csv("output/MDEQ-SRN-documents.csv", index=False)
+    updated_df.to_csv("output/EGLE-AQD-documents.csv", index=False)
     
 else:
     new_data_urls = []
@@ -179,23 +179,23 @@ else:
 # In[ ]:
 
 
-# Merging documents with MDEQ Source Directory
+# Merging documents with EGLE Source Directory
 # To get identifying information
 
 if len(all_sources_data) != 0:
-    df = updated_df.merge(directory_df, left_on="source_id", right_on="id", how="left")
+    df = updated_df.merge(source_list_df, left_on="source_id", right_on="id", how="left")
     df = df.drop(['id'], axis=1)
     df['date'] = pd.to_datetime(df['date'], format="%Y%m%d", errors='coerce')
     df['zip_code'] = df['zip_code'].astype(str).str[:5]
     df = df[['name', 'doc_type','date','zip_code','county','full_address','source_id','geometry', 'doc_url']]
-    df.to_csv("output/MDEQ-SRN-documents-source-info.csv", index=False)
+    df.to_csv("output/EGLE-AQD-documents-source-info.csv", index=False)
 
 
 # In[ ]:
 
 
 # Reading in my csv of extra documents
-df = pd.read_csv("output/MDEQ-SRN-extra-documents.csv")
+df = pd.read_csv("output/EGLE-AQD-extra-documents.csv")
 
 # Turning my list of lists of dicts of Extra Documents into a dataframe
 if len(all_sources_extras) != 0:
@@ -207,7 +207,7 @@ if len(all_sources_extras) != 0:
     updated_df = pd.concat([df,new_extras_df], axis=0, ignore_index=True)
     
     # Overwriting the old csv with updates
-    updated_df.to_csv("output/MDEQ-SRN-extra-documents.csv", index=False)
+    updated_df.to_csv("output/EGLE-AQD-extra-documents.csv", index=False)
     
 else:
     new_extras_urls = []
@@ -217,7 +217,7 @@ else:
 
 
 # Reading in my most recent scrape report
-df = pd.read_csv("output/MDEQ-SRN-scraper-report.csv")
+df = pd.read_csv("output/EGLE-AQD-scraper-report.csv")
 
 # Creating today's scrape report
 
@@ -266,5 +266,5 @@ report_df = pd.DataFrame(scrape_report)
 report_df = pd.concat([df,report_df], axis=0, ignore_index=True)
 
 # Overwriting the report csv with update
-report_df.to_csv("output/MDEQ-SRN-scraper-report.csv", index=False)
+report_df.to_csv("output/EGLE-AQD-scraper-report.csv", index=False)
 
