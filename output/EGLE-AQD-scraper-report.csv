@@ -4,3 +4,5 @@ date,updates_found,source_data,source_extras,mistakes,sources_updated,source_dat
 1/14/2022,3,3,0,0,"['A3900', 'A9831', 'N8044']","['https://www.deq.state.mi.us/aps/downloads/SRN/A3900/A3900_TEST_20211109.pdf', 'https://www.deq.state.mi.us/aps/downloads/SRN/A9831/A9831_TEST_20211130.pdf', 'https://www.deq.state.mi.us/aps/downloads/SRN/N8044/N8044_TEST_20210930.pdf']",,
 1/15/2022,0,0,0,0,,,,
 1/16/2022,17,1,0,0,"['A2931', 'A9831', 'B1678', 'B1801', 'B2757', 'B2767', 'B3350', 'B7248', 'M4085', 'N0795', 'N1436', 'N2155', 'N2688', 'N5109', 'N5505', 'N7228', 'P0580']",['https://www.deq.state.mi.us/aps/downloads/SRN/P0580/P0580_SAR_20210714.pdf'],,
+1/17/2022,0,0,0,0,,,,
+1/18/2022,5,5,0,0,"['A4043', 'B1476', 'B2796', 'N5747', 'N6226']","['https://www.deq.state.mi.us/aps/downloads/SRN/A4043/A4043_SAR_20211215.pdf', 'https://www.deq.state.mi.us/aps/downloads/SRN/B2796/B2796_TEST_20211207.pdf', 'https://www.deq.state.mi.us/aps/downloads/SRN/B2796/B2796_TEST_20211210.pdf', 'https://www.deq.state.mi.us/aps/downloads/SRN/N5747/N5747_TEST_20211221.pdf', 'https://www.deq.state.mi.us/aps/downloads/SRN/N6226/N6226_VN_20220118.pdf']",,
