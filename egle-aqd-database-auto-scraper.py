@@ -63,12 +63,12 @@ sources_updated = []
 for source in source_dates:
     source_id = source[1]
     date = source[0]
-    if (date == today) & (source_id in source_id_list):
+    if (date == "3/2/2022") & (source_id in source_id_list):
         link = "https://www.egle.state.mi.us/aps/downloads/srn/"+source_id
         updates.append(link)
         sources_updated.append(source_id)
 for source in unknown_source_dates:
-    if (date == today) & (source_id in source_id_list):
+    if (date == "3/2/2022") & (source_id in source_id_list):
         link = "https://www.egle.state.mi.us/aps/downloads/srn/"+source_id
         updates.append(link)
         sources_updated.append(source_id)
@@ -224,7 +224,7 @@ df = pd.read_csv("output/EGLE-AQD-scraper-report.csv")
 scrape_report = []
 data = {}
 
-data['date'] = today
+data['date'] = "3/2/2022"
 
 data['updates_found'] = len(sources_updated)
 
