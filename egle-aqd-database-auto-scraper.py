@@ -38,7 +38,7 @@ source_id_list = source_list_df.id.to_list()
 
 
 # Reading the EGLE database home page and getting the text
-raw_html = requests.get("https://www.deq.state.mi.us/aps/downloads/SRN/").content
+raw_html = requests.get("https://www.egle.state.mi.us/aps/downloads/srn/").content
 doc = BeautifulSoup(raw_html, "html.parser")
 text = doc.get_text()
 
@@ -64,12 +64,12 @@ for source in source_dates:
     source_id = source[1]
     date = source[0]
     if (date == today) & (source_id in source_id_list):
-        link = "https://www.deq.state.mi.us/aps/downloads/SRN/"+source_id
+        link = "https://www.egle.state.mi.us/aps/downloads/srn/"+source_id
         updates.append(link)
         sources_updated.append(source_id)
 for source in unknown_source_dates:
     if (date == today) & (source_id in source_id_list):
-        link = "https://www.deq.state.mi.us/aps/downloads/SRN/"+source_id
+        link = "https://www.egle.state.mi.us/aps/downloads/srn/"+source_id
         updates.append(link)
         sources_updated.append(source_id)
 
@@ -114,10 +114,10 @@ for directory in tqdm(updates):
     for link in links:
         data = {}
         other = {}
-        doc_url = 'https://www.deq.state.mi.us'+link['href']
+        doc_url = 'https://www.egle.state.mi.us/aps/downloads/srn/'+link['href']
         
         # I only want new URLs. Also, don't capture the ['To Parent Directory'] link
-        if (doc_url not in doc_url_list) & (doc_url != 'https://www.deq.state.mi.us/aps/downloads/SRN/'):
+        if (doc_url not in doc_url_list) & (doc_url != 'https://www.egle.state.mi.us/aps/downloads/srn/'):
             
             # Save data from documents that fit the regex
             try:
