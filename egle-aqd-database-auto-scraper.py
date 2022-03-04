@@ -38,7 +38,7 @@ source_id_list = source_list_df.id.to_list()
 
 
 # Reading the EGLE database home page and getting the text
-raw_html = requests.get("https://www.egle.state.mi.us/aps/downloads/srn/").content
+raw_html = requests.get("https://www.egle.state.mi.us/aps/downloads/srn/", verify=False).content
 doc = BeautifulSoup(raw_html, "html.parser")
 text = doc.get_text()
 
