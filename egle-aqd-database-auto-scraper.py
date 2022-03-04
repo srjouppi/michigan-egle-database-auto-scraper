@@ -114,7 +114,7 @@ for directory in tqdm(updates):
     for link in links:
         data = {}
         other = {}
-        doc_url = 'https://www.egle.state.mi.us/aps/downloads/srn/'+link['href']
+        doc_url = 'https://www.egle.state.mi.us'+link['href']
         
         # I only want new URLs. Also, don't capture the ['To Parent Directory'] link
         if (doc_url not in doc_url_list) & (doc_url != 'https://www.egle.state.mi.us/aps/downloads/srn/'):
