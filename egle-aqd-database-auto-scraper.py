@@ -104,7 +104,7 @@ mistakes = []
 
 # Look in the directories that have updates
 for directory in tqdm(updates):
-    raw_html = requests.get(directory).content
+    raw_html = requests.get(directory, verify=False).content
     doc = BeautifulSoup(raw_html, "html.parser")
     links = doc.find_all('a')
     source_data = []
