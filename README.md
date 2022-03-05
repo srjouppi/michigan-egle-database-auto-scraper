@@ -43,7 +43,6 @@ Creates a report for each day detailing:
 - The number of new URL's it found 
 - Lists the new URL's found
 
-
 ### :nut_and_bolt: Process
 ---
 EGLE has a [master list](https://www.deq.state.mi.us/aps/downloads/SRN/Sources_By_ZIP.pdf) of sources of air pollution its tracking in the state.
@@ -58,6 +57,6 @@ This scraper uses Beautiful Soup and Regex to search the database for directorie
 
 ### Note
 ---
-To better understand what exactly is on their database: you should call the EGLE's Air Quality Division. It's on my list of things to do, but alas, I'm in the throes of grad school and motherhood.
+To better understand what exactly is on their database: you should call the EGLE's Air Quality Division. For instance, it's easy to assume that the violation notices are *emissions* violations, however many times they are data reporting or other procedural violations.
 
 *Next* on my list is to download all of these pdfs for safe keeping. But until then, happy exploring!
