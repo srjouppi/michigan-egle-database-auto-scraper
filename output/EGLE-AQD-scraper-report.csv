@@ -54,3 +54,4 @@ date,updates_found,source_data,source_extras,mistakes,sources_updated,source_dat
 3/5/2022,0,0,0,0,,,,
 3/6/2022,0,0,0,0,,,,
 3/7/2022,2,2,0,0,"['N2079', 'N5985']","['https://www.egle.state.mi.us/aps/downloads/srn/N2079/N2079_RVN_20220303.pdf', 'https://www.egle.state.mi.us/aps/downloads/srn/N5985/N5985_TEST_20220223.pdf']",,
+3/8/2022,4,4,0,0,"['A7809', 'B5578', 'M3431', 'N2688']","['https://www.egle.state.mi.us/aps/downloads/srn/A7809/A7809_RVN_20220307.pdf', 'https://www.egle.state.mi.us/aps/downloads/srn/B5578/B5578_SAR_20211201.pdf', 'https://www.egle.state.mi.us/aps/downloads/srn/M3431/M3431_VN_20220308.pdf', 'https://www.egle.state.mi.us/aps/downloads/srn/N2688/N2688_RVN_20211110.pdf']",,
