@@ -251,7 +251,6 @@ docTypes = ['SAR',
  'ASBVN',
  'AFO',
  'RASBVN',
- 'SEM',
  'CD']
  
 # If documents found today, getting counts for the different types:
