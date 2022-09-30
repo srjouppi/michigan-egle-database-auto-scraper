@@ -74,7 +74,7 @@ oldDocs = oldDocs.doc_url.to_list()
 oldExtras = pd.read_csv("output/EGLE-AQD-extra-documents.csv")
 
 # list of URLs
-oldExtras = oldDocs.doc_url.to_list()
+oldExtras = oldExtras.doc_url.to_list()
 
 # ### Looking for new documents in the updated directories
 
