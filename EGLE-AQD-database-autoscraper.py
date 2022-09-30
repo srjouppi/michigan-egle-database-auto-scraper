@@ -68,13 +68,13 @@ for source in sourceDatesUnknown:
 oldDocs = pd.read_csv("output/EGLE-AQD-document-dataset-full.csv")
 
 # list of URLs
-oldDocs = df.doc_url.to_list()
+oldDocs = oldDocs.doc_url.to_list()
 
 # EXTRA documents that didn't fit the regex
 oldExtras = pd.read_csv("output/EGLE-AQD-extra-documents.csv")
 
 # list of URLs
-oldExtras = df.doc_url.to_list()
+oldExtras = oldDocs.doc_url.to_list()
 
 # ### Looking for new documents in the updated directories
 
@@ -259,7 +259,7 @@ docTypes = ['SAR',
 
 # For each document type, look to see if it was found today,
 # If so, add the count. If not, return "None"
-for docType in types:
+for docType in docTypes:
     if docType in newDocsTypes:
         data[docType] = newDocsTypes[docType]
     else:
