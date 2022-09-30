@@ -238,9 +238,6 @@ data['sources_updated'] = len(sourcesUpdated)
 
 data['docs_found'] = len(newDocsURLs)
 
-# Getting counts for the different documents found today:
-newDocsTypes = newDocs.type_simple.value_counts().to_dict()
-
 # All "Type Simple" Doc Types:
 docTypes = ['SAR',
  'FCE',
@@ -256,6 +253,12 @@ docTypes = ['SAR',
  'RASBVN',
  'SEM',
  'CD']
+ 
+# If documents found today, getting counts for the different types:
+if data['docs_found'] != 0:
+    newDocsTypes = newDocs.type_simple.value_counts().to_dict()
+else:
+    newDocsTypes = []
 
 # For each document type, look to see if it was found today,
 # If so, add the count. If not, return "None"
