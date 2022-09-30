@@ -22,7 +22,7 @@ jobs:
       - name: Install all necessary packages
         run: pip install requests beautifulsoup4 pandas tqdm regex
       - name: Run the scraping script
-        run: python egle-aqd-database-auto-scraper.py
+        run: python EGLE-AQD-database-autoscraper.py
       - name: Commit and push if content changed
         run: |-
           git config user.name "Automated"
