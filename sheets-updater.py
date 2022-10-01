@@ -13,7 +13,7 @@ sh = gc.open('EGLE AQD Document Database')
 wks = sh.worksheet_by_title("data")
 
 # Define a dataframe
-df = pd.read_csv('EGLE-AQD-document-dataset-full.csv')
+df = pd.read_csv('output/EGLE-AQD-document-dataset-full.csv')
 
 # Assign the dataframe to the worksheet
 wks.set_dataframe(df, start='A1', fit=True)
