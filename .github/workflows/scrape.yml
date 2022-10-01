@@ -34,4 +34,4 @@ jobs:
       - name: Run the google sheets updater script
         env:
           sheets_service_auth: ${{ secrets.SHEETS_SERVICE_AUTH }}
-        run: sheets-updater.py
+        run: python sheets-updater.py
