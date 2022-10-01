@@ -31,3 +31,7 @@ jobs:
           timestamp=$(date -u)
           git commit -m "Latest data: ${timestamp}" || exit 0
           git push
+      - name: Run the google sheets updater script
+        env:
+          sheets_service_auth: ${{ secrets.SHEETS_SERVICE_AUTH }}
+        run: sheets-updater.py
