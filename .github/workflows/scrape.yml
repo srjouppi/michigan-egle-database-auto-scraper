@@ -20,7 +20,7 @@ jobs:
         with:
           python-version: '3.9'
       - name: Install all necessary packages
-        run: pip install requests beautifulsoup4 pandas tqdm regex
+        run: pip install requests beautifulsoup4 pandas tqdm regex pygsheets
       - name: Run the scraping script
         run: python EGLE-AQD-database-autoscraper.py
       - name: Commit and push if content changed
@@ -34,4 +34,4 @@ jobs:
       - name: Run the google sheets updater script
         env:
           sheets_service_auth: ${{ secrets.SHEETS_SERVICE_AUTH }}
-        run: sheets-updater.py
+        run: python sheets-updater.py
