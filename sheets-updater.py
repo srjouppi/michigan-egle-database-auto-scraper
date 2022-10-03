@@ -7,8 +7,8 @@ import pandas as pd
 gc = pygsheets.authorize(service_account_env_var = 'sheets_service_auth')
 
 # Grab the spreadsheet
-sh1 = gc.open('EGLE AQD Document Database')
-sh2 = gc.open('EGLE AQD Document Database - Last 90 Days')
+sh1 = gc.open('EGLE AQD Document Dataset')
+sh2 = gc.open('EGLE AQD Document Dataset - Last 90 Days')
 # Grab the worksheet
 wks1 = sh1.worksheet_by_title("data")
 wks2 = sh2.worksheet_by_title("data")
