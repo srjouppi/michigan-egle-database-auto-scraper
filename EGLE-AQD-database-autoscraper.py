@@ -170,7 +170,7 @@ if len(allSourcesData) != 0:
     newDocs = newDocs.merge(sourceList,how='left', left_on='source_id',right_on='srn')
 
     # Rearranging Columns
-    newDocs = newDocs[['srn','facility_name','doc_type','type_name','date','year','doc_url','type_simple','type_name_simple','epa_class','address_line1','city_name','zip_cd','add_county_name','district_name','address_full','staff']]
+    newDocs = newDocs[['date','year','facility_name','doc_type','type_name','doc_url','srn','epa_class','address_line1','city','zip','county','egle_district','staff','type_simple','type_name_simple','address_full']]
     
     # Reading in existing document dataset
     oldDocs = pd.read_csv("output/EGLE-AQD-document-dataset-full.csv", dtype={'zip_cd':str})

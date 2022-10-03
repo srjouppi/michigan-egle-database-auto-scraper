@@ -1,4 +1,4 @@
-srn,facility_name,doc_type,type_name,date,year,doc_url,type_simple,type_name_simple,epa_class,address_line1,city_name,zip_cd,add_county_name,district_name,address_full,staff
+srn,facility_name,doc_type,type_name,date,year,doc_url,type_simple,type_name_simple,epa_class,address_line1,city,zip,county,egle_district,address_full,staff
 B1925,"ALUDYNE MONTAGUE, LLC",VN,Violation Notice,2022-09-30,2022,https://www.egle.state.mi.us/aps/downloads/SRN/B1925/B1925_VN_20220930.pdf,VN,Violation Notice,SM OPT OUT,5353 Wilcox St.,MONTAGUE,49437,MUSKEGON,GRAND RAPIDS,"5353 Wilcox St., MONTAGUE, MI 49437",GRINSTERNE
 N7688,"DICASTAL NORTH AMERICA, INC.",VN,Violation Notice,2022-09-30,2022,https://www.egle.state.mi.us/aps/downloads/SRN/N7688/N7688_VN_20220930.pdf,VN,Violation Notice,SM OPT OUT,1 Dicastal Dr.,GREENVILLE,48838,MONTCALM,GRAND RAPIDS,"1 Dicastal Dr., GREENVILLE, MI 48838",GRINSTERNE
 A4338,GERBER PRODUCTS CO,FCE,Full Compliance Evaluation,2022-09-29,2022,https://www.egle.state.mi.us/aps/downloads/SRN/A4338/A4338_FCE_20220929.pdf,FCE,Full Compliance Evaluation,SM OPT OUT,405 STATE ST,FREMONT,49413,NEWAYGO,GRAND RAPIDS,"405 STATE ST, FREMONT, MI 49413",DEVRIESK1
