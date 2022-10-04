@@ -29,7 +29,7 @@ wks2.frozen_rows=1
 model_cell1 = wks1.cell('A1')
 model_cell2 = wks2.cell('A1')
 
-model_cell2.set_text_format('bold', True)
+model_cell1.set_text_format('bold', True)
 model_cell2.set_text_format('bold', True)
 
 drange1 = pygsheets.datarange.DataRange(start='A1', end='Q1', worksheet=wks1)
