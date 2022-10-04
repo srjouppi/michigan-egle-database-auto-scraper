@@ -1,0 +1,43 @@
+doc_type,type_name,type_simple,type_name_simple
+SAR,Staff Activity Report,SAR,Staff Activity Report
+FCE,Full Compliance Evaluation,FCE,Full Compliance Evaluation
+TEST,Test,TEST,Test
+VN,Violation Notice,VN,Violation Notice
+RVN,Response to Violation Notice,RVN,Response to Violation Notice
+ACO,Administrative Consent Order,ACO,Administrative Consent Order
+ENFN,Enforcement Notice,ENFN,Enforcement Notice
+TEST2,2nd Test,TEST,Test
+TEST1,1st Test,TEST,Test
+STIP,Stipulated Fines,STIP,Stipulated Fines
+VN2,2nd Violation Notice,VN,Violation Notice
+VN1,1st Violation Notice,VN,Violation Notice
+SAR2,2nd Staff Activity Report,SAR,Staff Activity Report
+ASBVN,Asbestos Violation Notice,ASBVN,Asbestos Violation Notice
+SAR1,1st Staff Activity Report,SAR,Staff Activity Report
+CJ,Consent Judgment,CJ,Consent Judgment
+RVN2,2nd Response to Violation Notice,RVN,Response to Violation Notice
+TEST3,3rd Test,TEST,Test
+AFO,Administrative Fine Order,AFO,Administrative Fine Order
+RVN1,1st Response to Violation Notice,RVN,Response to Violation Notice
+VN3,3rd Violation Notice,VN,Violation Notice
+RASBVN,Response to Asbestos Violation Notice,RASBVN,Response to Asbestos Violation Notice
+RVN3,3rd Response to Violation Notice,RVN,Response to Violation Notice
+SEM,Surface Emission Monitoring,SEM,Surface Emission Monitoring
+CJ2,2nd Consent Judgment,CJ,Consent Judgment
+CJ1,1st Consent Judgment,CJ,Consent Judgment
+ASBVN2,2nd Asbestos Violation,ASBVN,Asbestos Violation
+VEE,Visible Emissions Evaluation,VEE,Visible Emissions Evaluation
+TEST6,6th Test,TEST,Test
+TEST5,5th Test,TEST,Test
+TEST4,4th Test,TEST,Test
+TEST10,10th Test,TEST,Test
+LTR,Letter,LTR,Letter
+CJ3,3rd Consent Judgment,CJ,Consent Judgment
+SAR4,4th Staff Activity Report,SAR,Staff Activity Report
+SAR3,3rd Staff Activity Report,SAR,Staff Activity Report
+PES,Proposed Enforcement Summary,PES,Proposed Enforcement Summary
+VN4,4th Violation Notice,VN,Violation Notice
+CD,Consent Decree,CD,Consent Decree
+FCE2,2nd Full Complience Evaluation,FCE,Full Complience Evaluation
+FCE1,1st Full Compliance Evaluation,FCE,Full Compliance Evaluation
+TEST7,7th Test,TEST,Test

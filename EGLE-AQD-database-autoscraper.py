@@ -161,7 +161,7 @@ if len(allSourcesData) != 0:
     
     # Reading in a key of document code
     ## Read about the creation of the key at srjouppi.github.io
-    key = pd.read_excel('EGLE-AQD-document-code-key.xlsx', sheet_name='DocKey')
+    key = pd.read_csv('EGLE-AQD-document-code-key.csv')
 
     # Merging with document code key 
     newDocs = newDocs.merge(key)
