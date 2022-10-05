@@ -227,6 +227,7 @@ else:
 
 # Reading in my most recent scrape report
 oldReport = pd.read_csv("output/EGLE-AQD-scraper-report.csv")
+oldReport.date = pd.to_datetime(oldReport.date)
 
 
 scrapeReport = []
