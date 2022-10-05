@@ -228,6 +228,7 @@ else:
 oldReport = pd.read_csv("output/EGLE-AQD-scraper-report.csv")
 oldReport.date = pd.to_datetime(oldReport.date)
 
+today = pd.to_datetime(today)
 
 scrapeReport = []
 data = {}
