@@ -83,7 +83,7 @@ allSourcesExtras = []
 mistakes = []
 
 # Look in the directories that have updates
-for directory in tqdm(updates):
+for directory in updates:
     raw_html = requests.get(directory, verify=False).content
     doc = BeautifulSoup(raw_html, "html.parser")
     links = doc.find_all('a')
@@ -118,7 +118,6 @@ for directory in tqdm(updates):
 
                     # extra doc names that don't fit the regex
                     other['doc_name'] = link.text
-                    print(link.text)
 
                     # extra doc URLs
                     other['doc_url'] = doc_url
