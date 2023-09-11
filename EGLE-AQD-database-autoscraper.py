@@ -14,12 +14,13 @@ from pytz import timezone
 
 # ### Getting the date
 
-tz = timezone('EST')
-today = datetime.now(tz) 
+# tz = timezone('EST')
+# today = datetime.now(tz) 
 
-# Making datetime the same format as the EGLE database
-today = today.strftime("%-m/%-d/%Y")
+# # Making datetime the same format as the EGLE database
+# today = today.strftime("%-m/%-d/%Y")
 
+today = "9/8/2023"
 
 # ### Getting a list of current sources
 # List provided by EGLE in May 2022 via FOIA.
