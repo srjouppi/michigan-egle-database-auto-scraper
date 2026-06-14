@@ -3,288 +3,311 @@
 
 # ### Imports
 
+import re
+import time
+import urllib.parse
+
 import requests
 import pandas as pd
-from bs4 import BeautifulSoup
-import re
 from tqdm import tqdm
 from datetime import datetime
 from pytz import timezone
 
 
-# ### Getting the date
+# ---------------------------------------------------------------------------
+# Constants
+# ---------------------------------------------------------------------------
 
-tz = timezone('EST')
-today = datetime.now(tz) 
+NSITE_BASE     = "https://mienviro.michigan.gov"
+SETTINGS_URL   = f"{NSITE_BASE}/nsite/api/settings/getWslSettings"
+DOCS_ENDPOINT  = (
+    f"{NSITE_BASE}/nsite/ss/api/nsite-explorer/default-mode"
+    "/profiles/4-documents/1-documents"
+)
+DOWNLOAD_BASE  = f"{NSITE_BASE}/ncore/downloadpdf"
 
-# Making datetime the same format as the EGLE database
-today = today.strftime("%-m/%-d/%Y")
+# Map nSITE description → legacy doc_type code (best-effort; unmapped get a sanitised code)
+DESC_TO_CODE = {
+    "Staff Activity Report":                 "SAR",
+    "Full Compliance Evaluation":            "FCE",
+    "Stack Test":                            "TEST",
+    "Stack Test Report":                     "TEST",
+    "Violation Notice":                      "VN",
+    "Response to Violation Notice":          "RVN",
+    "Administrative Consent Order":          "ACO",
+    "Enforcement Notice":                    "ENFN",
+    "Stipulated Fines":                      "STIP",
+    "Consent Judgment":                      "CJ",
+    "Asbestos Violation Notice":             "ASBVN",
+    "Response to Asbestos Violation Notice": "RASBVN",
+    "Administrative Fine Order":             "AFO",
+    "Civil Judgment":                        "CD",
+    "Compliance Determination":              "CD",
+}
 
 
-# ### Getting a list of current sources
-# List provided by EGLE in May 2022 via FOIA.
-sourceList = pd.read_csv('CMS-Subject-Sources-Simple.csv')
+# ---------------------------------------------------------------------------
+# Session helpers
+# ---------------------------------------------------------------------------
 
-# ### Looking for sources in this list that were updated today
-
-# Pulling up the EGLE database
-raw_html = requests.get("https://www.egle.state.mi.us/aps/downloads/SRN/", verify=False).content
-doc = BeautifulSoup(raw_html, "html.parser")
-text = doc.get_text()
-
-# Getting the source name and date the directory was updated
-# Although the text shows the source ID next to the date, 
-# the date actually appears before the source ID on the website
-# So my regex is looking for the source ID ~after~ the date.
-sourceDates = re.findall(r"(\d\d?/\d\d?/\d{4})\s+\d+:\d{2}\s[A-Z]{2}\s*<dir>\s([A-Z]\d{4})",text)
-sourceDatesUnknown = re.findall(r"(\d\d?/\d\d?/\d{4})\s+\d+:\d{2}\s[A-Z]{2}\s*<dir>\s([U]\d{9})",text)
+def make_session():
+    """Return a requests.Session with a valid nSITE cookie."""
+    s = requests.Session()
+    s.headers.update({"User-Agent": "Mozilla/5.0 (compatible; EGLE-AQD-scraper/2.0)"})
+    s.get(SETTINGS_URL, timeout=30)
+    return s
 
 
-# ### Making a list of directory URLs that have had updates today
+def fetch_site_documents(session, nsite_id):
+    """
+    Return a list of raw document dicts from nSITE for a single site ID.
+    Raises on HTTP error; returns [] if the site has no documents.
+    """
+    query_params = urllib.parse.quote(
+        '{"filter":[{"id":"' + str(nsite_id) + '"}]}'
+    )
+    url = (
+        f"{DOCS_ENDPOINT}"
+        f"?responseContentType=application/json"
+        f"&includeMetadataInResponse=true"
+        f"&loadChildren=true"
+        f"&queryParams={query_params}"
+        f"&filterString="
+    )
+    referer = (
+        f"{NSITE_BASE}/nsite/DEFAULT/map/results/detail/{nsite_id}/Documents"
+    )
 
-updates = []
+    for attempt in range(3):
+        try:
+            r = session.get(
+                url,
+                headers={"Referer": referer, "Accept": "application/json"},
+                timeout=30,
+            )
+            data = r.json()
+            return data.get("queryResults", [])
+        except Exception:
+            if attempt == 2:
+                return []
+            time.sleep(2 ** attempt)
+
+
+def parse_doc_url(html_anchor):
+    """Extract href from '<a href="URL">Download</a>' string."""
+    m = re.search(r'href="([^"]+)"', html_anchor or "")
+    return m.group(1) if m else html_anchor
+
+
+def doc_to_row(raw_doc, srn, row_meta):
+    """
+    Convert a raw nSITE document dict to the output schema.
+    row_meta is a Series from the source-list CSV for this SRN.
+    """
+    descr   = raw_doc.get("docMgmtDocDescr", "")
+    srctype = raw_doc.get("docMgmtSourcetype", descr)
+    date_str = raw_doc.get("docMgmtDocRvcdCreatedDate", "")
+
+    # Derive the legacy doc_type code; fall back to a sanitised acronym
+    doc_type = DESC_TO_CODE.get(descr) or DESC_TO_CODE.get(srctype)
+    if not doc_type:
+        doc_type = re.sub(r"[^A-Z0-9]", "", (descr or srctype).upper())[:8] or "UNK"
+
+    try:
+        date = pd.to_datetime(date_str).tz_localize(None).normalize()
+    except Exception:
+        date = pd.NaT
+
+    doc_id  = raw_doc.get("docMgmtDocMgmtId", "")
+    doc_url = parse_doc_url(raw_doc.get("docMgmtDocurl", "")) or f"{DOWNLOAD_BASE}/{doc_id}"
+
+    return {
+        "date":            date,
+        "year":            date.year if pd.notna(date) else None,
+        "facility_name":   row_meta.get("facility_name", ""),
+        "doc_type":        doc_type,
+        "type_name":       descr or srctype,
+        "doc_url":         doc_url,
+        "nsite_doc_id":    doc_id,
+        "srn":             srn,
+        "epa_class":       row_meta.get("epa_class", ""),
+        "address_line1":   row_meta.get("address_line1", ""),
+        "city":            row_meta.get("city", ""),
+        "zip":             row_meta.get("zip", ""),
+        "county":          row_meta.get("county", ""),
+        "egle_district":   row_meta.get("egle_district", ""),
+        "staff":           row_meta.get("staff", ""),
+        "address_full":    row_meta.get("address_full", ""),
+        # extra nSITE fields (useful for filtering / enrichment)
+        "nsite_category":  raw_doc.get("docMgmtCategory", ""),
+        "nsite_prog_area": raw_doc.get("docMgmtSourceprogramarea", ""),
+        "nsite_func_area": raw_doc.get("docMgmtSourcefunctionalarea", ""),
+    }
+
+
+# ---------------------------------------------------------------------------
+# Date helpers
+# ---------------------------------------------------------------------------
+
+tz = timezone("EST")
+today = datetime.now(tz)
+today_str = today.strftime("%-m/%-d/%Y")
+today_pd  = pd.Timestamp(today.date())
+
+
+# ---------------------------------------------------------------------------
+# Load supporting data
+# ---------------------------------------------------------------------------
+
+sourceList = pd.read_csv("CMS-Subject-Sources-Simple.csv")
+
+try:
+    mapping = pd.read_csv("nsite_id_mapping.csv")
+except FileNotFoundError:
+    raise SystemExit(
+        "nsite_id_mapping.csv not found. "
+        "Run build_nsite_mapping.py first to generate it."
+    )
+
+# Build SRN → nSITE ID dict (skip rows with no SRN)
+srn_to_nsite = (
+    mapping.dropna(subset=["srn"])
+    .set_index("srn")["nsite_id"]
+    .to_dict()
+)
+
+# Build SRN → source-list row dict for metadata lookup
+srn_meta = sourceList.set_index("srn").to_dict("index")
+
+# ---------------------------------------------------------------------------
+# Load existing datasets
+# ---------------------------------------------------------------------------
+
+oldDocs    = pd.read_csv("output/EGLE-AQD-document-dataset-full.csv")
+oldExtras  = pd.read_csv("output/EGLE-AQD-extra-documents.csv")
+oldReport  = pd.read_csv("output/EGLE-AQD-scraper-report.csv")
+oldReport.date = pd.to_datetime(oldReport.date)
+
+# Deduplication sets
+if "nsite_doc_id" in oldDocs.columns:
+    seen_ids = set(oldDocs["nsite_doc_id"].dropna().astype(str))
+else:
+    seen_ids = set()
+
+# ---------------------------------------------------------------------------
+# Scrape
+# ---------------------------------------------------------------------------
+
+session = make_session()
+
+allNewRows    = []
 sourcesUpdated = []
+mistakes      = []
 
-sourceListSRNs = sourceList.srn.to_list()
+srns_in_list = sourceList.srn.to_list()
 
-for source in sourceDates:
-    sourceID = source[1]
-    date = source[0]
-    if (date == today) & (sourceID in sourceListSRNs):
-        link = "https://www.egle.state.mi.us/aps/downloads/SRN/"+ sourceID
-        updates.append(link)
-        sourcesUpdated.append(sourceID)
-        
-for source in sourceDatesUnknown:
-    if (date == today) & (sourceID in sourceList.srn):
-        link = "https://www.egle.state.mi.us/aps/downloads/SRN/"+ sourceID
-        updates.append(link)
-        sourcesUpdated.append(sourceID)
+for srn in tqdm(srns_in_list, desc="Checking facilities"):
+    nsite_id = srn_to_nsite.get(srn)
+    if not nsite_id:
+        continue  # not yet in mapping – run build_nsite_mapping.py to add it
 
+    raw_docs = fetch_site_documents(session, nsite_id)
+    if not raw_docs:
+        continue
 
-# ### Getting the current document datasets
+    meta = srn_meta.get(srn, {})
+    new_for_site = []
 
-# documents I already have
-oldDocs = pd.read_csv("output/EGLE-AQD-document-dataset-full.csv")
+    for raw in raw_docs:
+        doc_id = str(raw.get("docMgmtDocMgmtId", ""))
+        if not doc_id or doc_id in seen_ids:
+            continue
 
-# list of URLs
-oldDocs = oldDocs.doc_url.to_list()
+        date_str = raw.get("docMgmtDocRvcdCreatedDate", "")
+        try:
+            doc_date = pd.to_datetime(date_str).tz_localize(None).normalize()
+        except Exception:
+            doc_date = pd.NaT
 
-# EXTRA documents that didn't fit the regex
-oldExtras = pd.read_csv("output/EGLE-AQD-extra-documents.csv")
+        # Only record documents received today (matching original scraper behaviour)
+        if pd.isna(doc_date) or doc_date != today_pd:
+            continue
 
-# list of URLs
-oldExtras = oldExtras.doc_url.to_list()
+        try:
+            row = doc_to_row(raw, srn, meta)
+            new_for_site.append(row)
+            seen_ids.add(doc_id)
+        except Exception as exc:
+            mistakes.append({"srn": srn, "doc_id": doc_id, "error": str(exc)})
 
-# ### Looking for new documents in the updated directories
+    if new_for_site:
+        allNewRows.extend(new_for_site)
+        sourcesUpdated.append(srn)
 
-allSourcesData = []
-allSourcesExtras = []
-mistakes = []
+    time.sleep(0.05)   # be polite to the server
 
-# Look in the directories that have updates
-for directory in updates:
-    raw_html = requests.get(directory, verify=False).content
-    doc = BeautifulSoup(raw_html, "html.parser")
-    links = doc.find_all('a')
-    sourceData = []
-    sourceExtras = []
-    # For each directory, look at the urls
-    for link in links:
-        data = {}
-        other = {}
-        doc_url = 'https://www.egle.state.mi.us'+link['href']
-        
-        # I only want new URLs. Also, don't capture the ['To Parent Directory'] link
-        if (doc_url not in oldDocs) & (doc_url != 'https://www.egle.state.mi.us/aps/downloads/SRN/'):
-            
-            # Save data from documents that fit the regex
-            try:
-                # Source_ID
-                data['source_id'] = re.findall(r"SRN/(.*)",directory)[0]
-                # Document code
-                data['doc_type'] = re.findall(r"_?([A-Z]+\d?\d?)_",link.text, re.IGNORECASE)[0]
-                # Date
-                data['date'] = re.findall(r"_(\d{8})", link.text)[0]
-                # URL
-                data['doc_url'] = doc_url
-                sourceData.append(data)
+# ---------------------------------------------------------------------------
+# Merge document code key (type_simple / type_name_simple)
+# ---------------------------------------------------------------------------
 
-            # Save links that don't fit the regex or just don't work for some reason (misakes)
-            except:
-                try:
-                    # Source_ID
-                    other['source_id'] = re.findall(r"SRN/(.*)", directory)[0]
+if allNewRows:
+    newDocs = pd.DataFrame(allNewRows)
+    newDocs.date = pd.to_datetime(newDocs.date)
+    newDocs["year"] = newDocs.date.dt.year
 
-                    # extra doc names that don't fit the regex
-                    other['doc_name'] = link.text
+    key = pd.read_csv("EGLE-AQD-document-code-key.csv")
+    newDocs = newDocs.merge(key[["doc_type", "type_simple", "type_name_simple"]],
+                            on="doc_type", how="left")
 
-                    # extra doc URLs
-                    other['doc_url'] = doc_url
-                    if (other['doc_name'] != '[To Parent Directory]') & (doc_url not in oldExtras):
-                        sourceExtras.append(other)
-
-
-                except:
-                    # If there are still links that don't work, save them in a list
-                    mistake = link
-                    mistakes.append(mistake)
-
-    if len(sourceData) != 0:
-        allSourcesData.append(sourceData)
-    if len(sourceExtras) != 0:
-        allSourcesExtras.append(sourceExtras)
-
-
-# ### Formatting new document data and adding it to existing dataset
-
-if len(allSourcesData) != 0:
-    
-    # Converting new data into a dataframe
-    dfList = [pd.DataFrame(oneList) for oneList in allSourcesData]
-    newDocs = pd.concat(dfList, ignore_index=True)
-    newDocsURLs = newDocs.doc_url.to_list()
-    
-    # Converting to datetime and adding year column
-    newDocs.date = pd.to_datetime(newDocs.date,format='%Y%m%d',errors='coerce')
-    newDocs['year'] = newDocs.date.dt.year
-    
-    # Removing leading zeroes
-    newDocs.loc[newDocs.doc_type.str.contains('0\d'),'doc_type'] = newDocs.loc[newDocs.doc_type.str.contains('0\d'),'doc_type'].str.replace("0",'')
-
-    # Making codes all uppercase
-    newDocs.doc_type = newDocs.doc_type.str.upper()
-
-    # Fixing a common transposition of "RVN"
-    newDocs.doc_type = newDocs.doc_type.str.replace('VNR','RVN')
-    
-    # Reading in a key of document code
-    ## Read about the creation of the key at srjouppi.github.io
-    key = pd.read_csv('EGLE-AQD-document-code-key.csv')
-
-    # Merging with document code key 
-    newDocs = newDocs.merge(key)
-
-    # Merging with source list for identifying information
-    newDocs = newDocs.merge(sourceList,how='left', left_on='source_id',right_on='srn')
-
-    # Rearranging Columns
-    newDocs = newDocs[['date','year','facility_name','doc_type','type_name','doc_url','srn','epa_class','address_line1','city','zip','county','egle_district','staff','type_simple','type_name_simple','address_full']]
-    
-    # Reading in existing document dataset
-    oldDocs = pd.read_csv("output/EGLE-AQD-document-dataset-full.csv", dtype={'zip_cd':str})
+    # Patch column order to match existing dataset
     oldDocs.date = pd.to_datetime(oldDocs.date)
-    
-    # Adding new documents to dataset
-    allDocs = pd.concat([oldDocs, newDocs], axis=0,ignore_index=True)
-    
-    # Sorting by date
-    allDocs = allDocs.sort_values('date',ascending=False, ignore_index=True)
-    
-    # Overwriting document dataset file
-    allDocs.to_csv('output/EGLE-AQD-document-dataset-full.csv',index=False)
-    
-    # Saving a subset of the most current documents (last 90 days) that is easier to use 
-    today = pd.to_datetime(today)
-    
-    # Getting a duration from the date of the file to today's date
-    def duration(date):
-        return today - date
+    allDocs = pd.concat([oldDocs, newDocs], axis=0, ignore_index=True)
+    allDocs = allDocs.sort_values("date", ascending=False, ignore_index=True)
 
-    allDocs['duration'] = allDocs.date.apply(duration)
-    allDocs.duration = allDocs.duration.dt.days
-    
-    # If the duration is less than 91, save it to the 90-day file.
-    allDocs.query('duration < 91').drop(['duration'],axis=1).sort_values('date',ascending=False).to_csv('output/EGLE-AQD-document-dataset-90days.csv',index=False)
-    
+    allDocs.to_csv("output/EGLE-AQD-document-dataset-full.csv", index=False)
+
+    # 90-day subset
+    allDocs["duration"] = (today_pd - allDocs.date).dt.days
+    (allDocs.query("duration < 91")
+             .drop(columns=["duration"])
+             .sort_values("date", ascending=False)
+             .to_csv("output/EGLE-AQD-document-dataset-90days.csv", index=False))
+
+    newDocsURLs = newDocs["doc_url"].to_list()
 else:
     newDocsURLs = []
 
+# ---------------------------------------------------------------------------
+# Scrape report
+# ---------------------------------------------------------------------------
 
-# ### Adding new extra documents to existing dataset
+docTypes = ["SAR","FCE","TEST","VN","RVN","ACO","ENFN","STIP","CJ",
+            "ASBVN","AFO","RASBVN","CD"]
 
-# Reading in my csv of extra documents
-oldExtras = pd.read_csv("output/EGLE-AQD-extra-documents.csv")
+data = {
+    "date":            today_pd,
+    "sources_updated": len(sourcesUpdated),
+    "docs_found":      len(newDocsURLs),
+    "extras_found":    0,
+    "mistakes_found":  len(mistakes),
+    "mistakes":        mistakes if mistakes else None,
+}
 
-# Turning my list of lists of dicts of Extra Documents into a dataframe
-if len(allSourcesExtras) != 0:
-    dfList = [pd.DataFrame(oneList) for oneList in allSourcesExtras]
-    newExtras = pd.concat(dfList, ignore_index=True)
-    newExtrasURLs = newExtras.doc_url.to_list()
-    
-    # Adding my new documents to my old documents
-    allExtras = pd.concat([oldExtras ,newExtras], axis=0, ignore_index=True)
-    
-    # Overwriting the old csv with updates
-    allExtras.to_csv("output/EGLE-AQD-extra-documents.csv", index=False)
-    
+if newDocsURLs and allNewRows:
+    newDocs_ref = pd.DataFrame(allNewRows)
+    newDocs_ref = newDocs_ref.merge(
+        pd.read_csv("EGLE-AQD-document-code-key.csv")[["doc_type", "type_simple"]],
+        on="doc_type", how="left"
+    )
+    type_counts = newDocs_ref["type_simple"].value_counts().to_dict()
+    for dt in docTypes:
+        data[dt] = type_counts.get(dt)
 else:
-    newExtrasURLs = []
+    for dt in docTypes:
+        data[dt] = None
 
+newReport = pd.concat(
+    [oldReport, pd.DataFrame([data])], axis=0, ignore_index=True
+).sort_values("date", ascending=False)
 
-# ### Creating today's scrape report
-
-# Reading in my most recent scrape report
-oldReport = pd.read_csv("output/EGLE-AQD-scraper-report.csv")
-oldReport.date = pd.to_datetime(oldReport.date)
-
-today = pd.to_datetime(today)
-
-scrapeReport = []
-data = {}
-
-data['date'] = today
-
-data['sources_updated'] = len(sourcesUpdated)
-
-data['docs_found'] = len(newDocsURLs)
-
-# All "Type Simple" Doc Types:
-docTypes = ['SAR',
- 'FCE',
- 'TEST',
- 'VN',
- 'RVN',
- 'ACO',
- 'ENFN',
- 'STIP',
- 'CJ',
- 'ASBVN',
- 'AFO',
- 'RASBVN',
- 'CD']
- 
-# If documents found today, getting counts for the different types:
-if data['docs_found'] != 0:
-    newDocsTypes = newDocs.type_simple.value_counts().to_dict()
-else:
-    newDocsTypes = []
-
-# For each document type, look to see if it was found today,
-# If so, add the count. If not, return "None"
-for docType in docTypes:
-    if docType in newDocsTypes:
-        data[docType] = newDocsTypes[docType]
-    else:
-        data[docType] = None
-
-data['extras_found'] = len(newExtrasURLs)
-
-data['mistakes_found'] = len(mistakes)
-    
-if data['mistakes_found'] != 0:
-    
-    data['mistakes'] = mistakes
-else:
-    data['mistakes'] = None
-
-scrapeReport.append(data)
-
-newReport = pd.DataFrame(scrapeReport)
-
-# Adding the new report to the old reports
-newReport = pd.concat([oldReport,newReport], axis=0, ignore_index=True).sort_values('date',ascending=False)
-
-# Overwriting the report csv with update
 newReport.to_csv("output/EGLE-AQD-scraper-report.csv", index=False)
-
